@@ -1,0 +1,32 @@
+---
+# SETUP DOCKER 
+- name: DOCKER | Install Docker
+  package: 
+    name: docker
+  become: true 
+
+- name: DOCKER | Ensure Docker group exists
+  group:
+    name: docker
+    state: present
+  become: true 
+
+- name: DOCKER | Configure Docker for "{{ host_username }}"
+  user:
+    name: "{{ host_username }}" 
+    groups: docker
+    append: yes
+  become: true 
+  
+- name: DOCKER | Enable docker
+  systemd:
+    name: docker 
+    enabled: yes
+  become: true 
+
+- name: DOCKER | Start docker
+  systemd:
+    name: docker
+    state: started 
+  become: true 
+ 

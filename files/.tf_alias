@@ -1,0 +1,137 @@
+###############################
+# TERRAFORM ALIASES
+###############################
+alias tf='terraform'
+alias tfutils='tf-utils'
+alias tfi='tf init'
+alias tfp='tf plan'
+alias tfa='tf apply'
+alias tfd='tf destroy'
+alias tfiu='tf init -upgrade'
+alias rmtf='rm -rf .terraform && echo "deleted .terraform directory"'
+alias rmtfl='rm -rf .terraform.lock.hcl && echo "deleted .terraform.lock.hcl"'
+alias tfsl='tf state list'
+
+# terraform plan, add 'autover' to use 'getver' output
+function tfp(){
+  local append=${@:1:#}
+  local autover=false
+  local useTfvar=true
+  stl --refresh
+  local ls=$(ls)
+  local workspace=$(terraform workspace show)
+  if [[ $ls != *"$workspace.tfvars"* ]]; then
+    echo "${YELLOW}did not find $workspace.tfvars${NOCOLOR}"
+    useTfvar=false
+  fi
+  if [[ $1 == "autover" ]]; then
+    autover=true
+    append="${@:2:#} ${TFP_VARS}"
+  fi
+  local base="terraform plan -out $workspace.out "
+  local vf="-var-file=$workspace.tfvars "
+  local last=""
+  if $useTfvar; then
+    if [[ $append == *"-var-file"* ]]; then
+      last="$base$append"
+    else
+      last="$base$vf$append"
+    fi
+  else
+    last="$base$append"
+  fi
+
+  echo "Planning for account: ${YELLOW}$AWS_PROFILE${NOCOLOR}"
+  echo "Planning for workspace: ${YELLOW}$workspace${NOCOLOR}"
+  if $autover; then
+    local tfpvars=$(echo ${TFP_VARS} | xargs)
+    local varlist=(${(@s: :)tfpvars})
+    echo "Using the following variable definitions:"
+    for var in $varlist
+    do
+      if [[ $var == "-var" ]]; then
+        continue
+      else
+        local varname=${var%%"="*}
+        local version=${var##*"="}
+        echo "${GREEN}- $varname${NOCOLOR} : ${YELLOW}$version${NOCOLOR}"
+      fi
+    done
+  fi
+  eval $last
+}
+
+# terraform apply
+function tfa(){
+  stl --refresh
+  local append=${@:1:#}
+  local workspace=$(terraform workspace show)
+  echo "Applying for account: ${YELLOW}$AWS_PROFILE${NOCOLOR}"
+  echo "Applying for workspace: ${YELLOW}$workspace${NOCOLOR}"
+  local cmd="terraform apply $workspace.out $append"
+  eval $cmd
+  sleep .25
+  rm -rf $workspace.out
+}
+
+# terraform destroy
+function tfd(){
+  stl --refresh
+  local append=${@:1:#}
+  local autover=false
+  local useTfvar=true
+  local ls=$(ls)
+  local workspace=$(terraform workspace show)
+  if [[ $ls != *"$workspace.tfvars"* ]]; then
+    echo "${YELLOW}did not find $workspace.tfvars${NOCOLOR}"
+    useTfvar=false
+  fi
+  local workspace=$(terraform workspace show)
+  local base="terraform destroy"
+  local vf="-var-file=$workspace.tfvars"
+  local last=""
+  if [[ $1 == "autover" ]]; then
+    autover=true
+    append=${@:2:#}
+    append="$append ${TFP_VARS}"
+  fi
+  if [[ ! $useTfvar || $append == *"-var-file"* ]]; then
+    last="$base $append"
+  else
+    last="$base $vf $append"
+  fi
+  echo "Destroying for account: ${YELLOW}$AWS_PROFILE${NOCOLOR}"
+  echo "Destroying for workspace: ${YELLOW}$workspace${NOCOLOR}"
+  if $autover; then
+    local tfpvars=$(echo ${TFP_VARS} | xargs)
+    local varlist=(${(@s: :)tfpvars})
+    echo "Using the following variable definitions:"
+    for var in $varlist
+    do
+      if [[ $var == "-var" ]]; then
+        continue
+      else
+        local varname=${var%%"="*}
+        local version=${var##*"="}
+        echo "${GREEN}- $varname${NOCOLOR} : ${YELLOW}$version${NOCOLOR}"
+      fi
+    done
+  fi
+  eval $last
+}
+
+# terraform refresh
+function tfr() {
+  local useTfvar-true
+  local ls=$(ls)
+  local workspace=$(terraform workspace show)
+  if [[ $ls != *"$workspace.tfvars"* ]]; then
+    echo "${YELLOW}did not find $workspace.tfvars${NOCOLOR}"
+    useTfvar=false
+  fi
+  if $useTfvar; then
+    eval "terraform refresh -var-file=$workspace.tfvars"
+  else
+    terraform refresh
+  fi
+}

@@ -1,0 +1,207 @@
+# checkout master or main
+function gcm() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    return
+  fi
+  git checkout $(gitdefaultbranch)
+}
+
+# pull from master or main
+function gpm() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    return
+  fi
+  git pull origin $(gitdefaultbranch)
+}
+
+# git reset hard
+function grh() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    return
+  fi
+  git reset --hard 
+}
+
+# search remote branches and checkout branch that matches the filter
+function gco() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    return
+  fi
+  git fetch --all
+  local searchCMD="git branch -a | rg -i origin | rg -v 'HEAD'"
+  for var in ${@:1:#}
+  do
+    searchCMD="${searchCMD} | rg -i '$var' "
+  done
+  local found=$(eval $searchCMD)
+  local first=$(head -1 <<< $found)
+  local branch=${first##*"remotes/origin/"}
+  git checkout $branch
+}
+
+# git clone to $PROJECT_PATH
+function gitc() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    return
+  fi
+  local url=$1
+  local currentpath=$(pwd)
+  cd $PROJECT_PATH
+  git clone $url
+  sleep .5
+  cd $currentpath
+}
+
+# create new branch
+function gnb() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    return
+  fi
+  branchName=$1
+  git checkout -b $branchName
+  git push --set-upstream origin $branchName
+}
+
+# delete branch
+function gdb() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    
+    return
+  fi
+  branchName=$1
+  git branch -d $branchName
+  git push origin --delete $branchName
+}
+
+# delete branch and return to master or main
+function gdbm() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    
+    return
+  fi
+  local branches=$(git branch)
+  local top=$(gitdefaultbranch)
+  local oldbranch=$(git rev-parse --abbrev-ref HEAD)
+  if [[ $oldbranch == $top ]]; then
+    echo "${RED}current branch is $top, exiting...${NOCOLOR}"
+    return
+  fi
+  git checkout $top
+  git pull
+  gdb $oldbranch
+}
+
+# create pull request from current branch to target branch, default to master
+function gpr() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    
+    return
+  fi
+  local target=$1
+  if [[ $target == "" ]]; then
+    target=$(gitdefaultbranch)
+  fi
+  local currentbranch=$(git branch --show-current)
+  local prstatus=$(gh pr status)
+  local currentbranchstatus=$(echo $prstatus | rg -i "$currentbranch")
+  if [[ $currentbranchstatus == *"Merged"* || $currentbranchstatus == *"Closed"* || $prstatus == *"There is no pull request associated with [$currentbranch]"* ]]; then
+    echo "${BLUE}[ creating pull request... ]${NOCOLOR}"
+    gh pr create --base $target --fill
+    local prurl=$(getprurl $currentbranch)
+    echo -n $prurl | pbcopy
+    echo "${YELLOW}copied to clipboard${NOCOLOR}"
+  else
+    echo "${BLUE}[ pull request already exists ]${NOCOLOR}"
+    local prurl=$(getprurl $currentbranch)
+    echo "pr url: $prurl"
+    echo -n $prurl | pbcopy
+    echo "${YELLOW}copied to clipboard${NOCOLOR}"
+  fi
+}
+
+# git add and commit
+function gcom() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    return
+  fi
+  local msg=${@:1:#}
+  if [[ $msg == "" ]]; then
+    echo "missing commit message, use '${PINK}$0 help${RED}' for more information.\nexiting..."
+    return
+  else
+    echo "Running command: ${BLUE}git add . ${NOCOLOR}&&${GREEN} git commit -m \"${YELLOW}$msg${GREEN}\"${NOCOLOR}"
+    echo "[ ${BLUE}GIT ADD${NOCOLOR} ]"
+    git add .
+    git status
+    echo "[ ${GREEN}GIT COMMIT${NOCOLOR} ]"
+    git commit -m "$msg"
+    echo "[ ${GREEN}GIT COMMIT STATUS${NOCOLOR} ]"
+    git status
+  fi
+}
+
+# open current project's github repo on current branch
+function gopen() {
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    return
+  fi
+  echo "${YELLOW}opening github repo in chrome...${NOCOLOR}"
+  gh repo view -b $(git branch --show-current) -w > /dev/null 2>&1
+} 
+
+function gitdefaultbranch() { #noface
+  local gitbranch=$(git branch -a)
+  if [[ $gitbranch == *"origin/HEAD -> origin/main"* ]]; then
+    echo "main"
+  else
+    echo "master"
+  fi
+}
+
+function gitpullstatus() { #noface
+  local projectname=$1
+  echo -n "${LIGHT}$projectname : ${NOCOLOR}"
+  local pull=$(git pull)
+  if [[ $pull == *"Already up to date"* ]]; then
+    echo "${GREEN}good${NOCOLOR}"
+  elif [[ $pull == *"CONFLICT"* ]]; then
+    echo "${RED}conflict${NOCOLOR}"
+  elif [[ $pull == *"Aborting"* ]]; then
+    echo "${YELLOW}local changes${NOCOLOR}"
+  elif [[ $pull == *"files changed"* ]]; then
+    echo "${BLUE}pulled${NOCOLOR}"
+  else
+    echo $pull
+  fi
+}
+
+# get url of pull request from current branch
+function gprurl() { #noface
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    
+    return
+  fi
+  local currentbranch=$1
+  local msg=$(gh pr status | rg $currentbranch | xargs)
+  local number=${msg%%" "*}
+  number=${number##*"#"}
+  local prstatus=$(gh pr view $number | rg "url" | xargs)
+  local url=${prstatus##*"url: "}
+  echo $url 
+}
+ 
+# Run git pull recursively in projects dir  
+function gpall() {
+  # perform a git pull on every dir in the projects dir.  
+  if [[ $1 == 'help' && $2 == '' ]]; then
+    
+    return
+  fi 
+  find $PROJECT_PATH -mindepth 1 -maxdepth 1 -type d -print -exec git -C {} pull \; 
+} 
+
+cloneall() {
+    gh repo list ${1} --limit 4000 | while read -r repo _; do
+    gh repo clone "$repo" "$repo"
+  done
+}

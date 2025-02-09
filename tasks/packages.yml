@@ -1,0 +1,64 @@
+---
+- name: PACKAGES | check services
+  service_facts:
+
+# Install packages for Debian/Ubuntu
+- name: PACKAGES | Install Debian/Ubuntu packages
+  package: 
+    name: "{{ item }}"  
+  with_items:
+    - "{{ apt_pkg_list }}"
+  become: true
+
+- name: PACKAGES | Install Flatpak packages
+  shell:
+    cmd: "flatpak install flathub {{ item }}"
+  with_items:
+    - "{{ flatpak_packages }}"
+  when: "'flatpak.service' in ansible_facts.services"
+
+- name: PACKAGES | Install Snap packages
+  shell:
+    cmd: "snap install {{ item }}"
+  become: true
+  with_items:
+    - "{{ snap_pkg_list }}"
+  when: "'snapd.service' in ansible_facts.services"
+
+- name: STEAM | Update repositories cache
+  ansible.builtin.apt:
+    update_cache: yes
+  become: true 
+
+#- name: STEAM | Install steam packages
+#  ansible.builtin.apt:
+#    name: "{{ steam_pkg_list }}"
+#    state: present 
+#  with_items:
+#    - "{{ steam_pkg_list }}"
+
+- name: GNOME | Install GNOME related packages
+  package: 
+    name: "{{ item }}"  
+  with_items:
+    - "{{ gnome_pkg_list }}"
+  tags: apt
+  register: result
+  until: result is not failed
+  retries: 5
+  delay: 5
+  become: true
+  when: "'gdm.service' in ansible_facts.services"
+
+- name: GNOME | Install GNOME related packages
+  package: 
+    name: "{{ item }}"  
+  with_items:
+    - "{{ gnome_pkg_list }}"
+  tags: apt
+  register: result
+  until: result is not failed
+  retries: 5
+  delay: 5
+  become: true 
+

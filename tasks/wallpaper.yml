@@ -1,0 +1,7 @@
+--- 
+# Run ansible task only if dir does not exist
+- name: GITLAB | Clone wallpaper-dump repository
+  command: "git clone {{ git_wallpaper_project }}"
+  args:
+      creates: "{{ wallpaper_dir }}"
+      

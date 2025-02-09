@@ -1,0 +1,64 @@
+--- 
+- name: SYSTEM | get the username variable
+  shell: "whoami"
+  register: hostusername
+
+- name: SYSTEM | Set facts 
+  set_fact:
+    host_username: "{{ lookup('env','USER') }}"
+    host_home_dir: "{{ lookup('env','HOME') }}"
+
+- name: SYSTEM | Setting up bash aliases
+  template: 
+    src: "{{ playbook_dir }}/files/bash_aliases"
+    dest: "{{ host_home_dir }}/.bash_aliases" 
+
+- name: SYSTEM | Setting custom aliases
+  template: 
+    src: "{{ item }}"
+    dest: "{{ host_home_dir }}/" 
+  with_items:
+    - "{{ playbook_dir }}/files/.git_alias"
+    - "{{ playbook_dir }}/files/.aws_alias"
+    - "{{ playbook_dir }}/files/.tf_alias"
+
+- name: SYSTEM | create directories if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ host_username }}"
+    group: "{{ host_username }}"
+    mode: 0775
+  loop:
+    - "{{ setup_dir }}"
+
+- name: SYSTEM | copy vimrc 
+  copy:
+    src: "files/vimrc"
+    dest: "{{ host_home_dir }}/.vimrc"  
+
+- name: SYSTEM | Checking Vundle dir exists
+  stat:
+    path: "{{ host_home_dir }}/.vim/bundle/Vundle.vim"
+  register: vundle_check
+
+- name: SYSTEM | Git checkout Vundle.vim
+  git:
+    repo: "https://github.com/VundleVim/Vundle.vim.git"
+    dest: "{{ host_home_dir }}/.vim/bundle/Vundle.vim"
+  when: vundle_check.stat.exists == false
+
+- name: SYSTEM | INSTALLING VIM PLUGINS
+  shell: 'vim +PluginInstall +qall'
+
+- name: SYSTEM | Install Custom system fonts
+  copy: 
+    src: "{{ item }}"
+    dest: "~/.local/share/fonts/"
+  with_items:
+    - "{{ playbook_dir }}/files/fonts/"
+
+- name: SYSTEM | Setting up GIT config
+  template: 
+    src: "{{ playbook_dir }}/files/.gitconfig"
+    dest: "{{ host_home_dir }}/.gitconfig"

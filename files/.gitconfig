@@ -1,0 +1,11 @@
+[user]
+	name = User Name
+	email = example@gmail.com
+[init]
+	defaultBranch = main
+[color]
+	ui = true
+[core]
+	editor = vim
+	autocrlf = input #windows LF line ending
+	whitespace = trailing-space,-space-before-tab,tab-in-indent,cr-at-eol

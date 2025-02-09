@@ -1,0 +1,167 @@
+---
+# Wallpaper Variables
+pictures_dir: '{{ host_home_dir }}/Pictures'
+wallpaper_dir: '{{ pictures_dir }}/wallpaper'
+git_wallpaper_project: "https://gitlab.com/tedleyem/wallpaper-dumps.git"
+
+projects_dir: '{{ host_home_dir }}/projects'
+work_dir: '{{ projects_dir }}/work'
+ansible_dir: '{{ projects_dir }}/ansible'
+vim_plugins_dir: '{{ host_home_dir }}/.vim/bundle' 
+setup_dir: 
+  - '{{ pictures_dir }}'
+  - '{{ work_dir }}' 
+  - '{{ vim_plugins_dir }}'
+  - '{{ wallpaper_dir }}'
+  - '{{ projects_dir }}'
+
+apt_pkg_list:  
+  - autoconf 
+  - automake
+  - blueman
+  - bluez
+  - bluez-tools
+  - build-essential 
+  - cmake 
+  - curl 
+  - dmidecode
+  - dnsutils
+  - docker
+  - docker-compose
+  - elinks 
+  - esmtp
+  - git
+  - gimp
+  - gh
+  - gnome-colors
+  - gnupg
+  - gnupg2
+  - gparted 
+  - ffmpeg
+  - flatpak
+  - gnome-shell-extensions
+  - gnome-tweaks 
+  - gvfs 
+  - inkscape
+  - magic-wormhole 
+  - mutt
+  - nano 
+  - ncdu 
+  - net-tools 
+  - neofetch 
+  - openssl
+  - packer 
+  - pass 
+  - pre-commit
+  - python-is-python3
+  - python3
+  - python3-pip 
+  - ranger 
+  - ripgrep 
+  - rsync 
+  - rsyslog 
+  - samba-common
+  - vagrant
+  - variety
+  - vim 
+  - vlc 
+  - wget 
+  - wl #firmware for wireless drivers
+  - xclip 
+  - youtube-dl 
+  - yt-dlp
+steam_pkg_list: 
+ - steam-installer
+ - steam
+ - mesa-vulkan-drivers 
+ - libglx-mesa0:i386 
+ - mesa-vulkan-drivers:i386 
+ - libgl1-mesa-dri:i386
+
+flatpak_pkg_list:
+  - io.gitlab.adhami3310.Impression
+  - org.gnome.Podcasts
+  - de.haeckerfelix.Shortwave
+  - io.gitlab.liferooter.TextPieces
+  - io.github.idevecore.Valuta
+  - org.gnome.gitlab.YaLTeR.VideoTrimmer
+  - app.drey.Warp
+
+snap_pkg_list:
+  - "aws-cli --classic"
+  - "kubectl --classic"
+  - "packer"
+  - "glab"
+
+gnome_extenstions: 
+  - openweather
+  - dash-to-dock
+  - collosseum
+  - extension-list 
+  - system-menu 
+
+gnome_pkg_list:
+  - gir1.2-gtop-2.0 
+  - gir1.2-nm-1.0 
+  - gir1.2-clutter-1.0 
+  - gnome-system-monitor 
+  - gnome-shell-extension-manager
+  - gnome-shell-extension-dashtodock
+  - gnome-shell-extension-weather
+  - gnome-shell-extension-bluetooth-quick-connect
+  - gnome-shell-extensions-extra
+  - gnome-shell-extension-system-monitor
+  - gnome-shell-extension-arc-menu
+
+homebrew_installed_packages:
+  - ansible
+  - ansible-lint
+  - awscli 
+  - docker
+  - docker-compose
+  - clocker
+  - commitizen 
+  - firefox
+  - gh
+  - gimp
+  - git
+  - itsycal 
+  - libreoffice
+  - lsd 
+  - iterm2
+  - jq 
+  - kubernetes-cli@1.22
+  - nvm 
+  - packer 
+  - packer-completion
+  - pass
+  - pip
+  - ripgrep 
+  - molecule
+  - pre-commit
+  - py-tf-utils  
+  - tfenv
+  - vagrant 
+  - wget  
+  - zsh-autosuggestions
+  
+#MAC OSX 
+homebrew_folders_base:
+  - Cellar
+  - Homebrew
+  - Frameworks
+  - Caskroom
+  - bin
+  - etc
+  - include
+  - lib
+  - opt
+  - sbin
+  - share
+  - share/zsh
+  - share/zsh/site-functions
+  - var
+
+minikube_ctl:
+  - "minikube start --cni=calico"
+  - "minikube addons enable metrics-server"

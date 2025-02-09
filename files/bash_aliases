@@ -1,0 +1,253 @@
+# BASH ALISES FOR DEV ENVIRONMENT
+###############################
+# SETTING UP COLORS
+###############################
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+export EDITOR=vim
+
+# declare specific global variables for functions below
+# -g flag create global variables when used in a shell function;
+# otherwise command.  The `-g' option suppresses this behavior.
+declare -g user="$(whoami)"
+declare -g user_home="/home/$user"
+declare -g project_dir="$user_home/projects"
+declare -g timestamp=`date`
+
+force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]
+\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+#unset color_prompt force_color_prompt
+#set color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+alias less='less --RAW-CONTROL-CHARS'
+export LS_OPTS='--color=auto'
+alias ls='ls ${LS_OPTS}'
+#export TERM=xterm-color
+export GREP_OPTIONS='--color=auto' GREP_COLORS='mt=1;32'
+# set colors in terminal
+export TERM=xterm-256color
+# colored GCC warnings and errors
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# export colors in gnome terminal
+#\u - user name
+#\h - short hostname
+#\W - current working dir
+#\? - exit status of the command
+export PS1="{\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\W_\$?}$ "
+
+###############################
+# SETTING UP aUTOCOMPLETE
+###############################
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+parse_git_branch() {
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+
+if [ "$color_prompt" = yes ]; then
+ PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[01;31m\]$(parse_git_branch)\[\033[00m\]\$ '
+else
+ PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w$(parse_git_branch)\$ '
+fi
+#unset color_prompt force_color_prompt
+#
+###############################
+# ALIASES
+###############################
+# GoLang logo-ls alias shortcuts
+alias ils='logo-ls'
+alias ila='logo-ls -A'
+alias ill='logo-ls -al'
+alias ilsg='logo-ls -D'
+alias ilag='logo-ls -AD'
+alias illg='logo-ls -alD'
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias ls='ls --color=auto'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias grep='grep --color=auto'
+# update bashrc
+alias srcz='source ~/.bashrc'
+# package manager shortcuts
+alias install='sudo apt install -y'
+alias purge='sudo apt purge -y'
+alias search='apt search'
+alias info='apt info'
+alias update='sudo apt update'
+alias upgrade='sudo apt upgrade -y'
+alias list='dpkg -l'
+# CLI shortcuts
+alias campfire='aafire -driver curses'
+alias check-moon='curl wttr.in/Moon'
+alias moon='curl wttr.in/Moon'
+alias check-weather='curl wttr.in'
+alias weather='curl wttr.in'
+alias crypto-rates='curl rate.sx'
+alias crypto='curl rate.sx'
+alias start-matrix='cmatrix'
+alias tartar='tar -zxvf'
+alias check-size='du -sh *'
+alias dush='du -sh *'
+# python shortcuts
+alias p3='python3'
+alias p3p='python3 -m pip'
+alias p3pi='python3 -m pip install'
+# VIM shortcuts
+alias update-vim='vim +PluginInstall +qall'
+# kubernetes shortcut
+alias k='kubectl'
+alias mk='minikube'
+# Vagrant shortcuts
+alias vg='vagrant'
+alias vgu='vagrant up'
+alias vgd='vagrant destroy'
+alias vgdf='vagrant destroy -f'
+alias vgp='vagrant up --provider=docker --provision'
+alias vgp='vagrant up --provision'
+# system shortcuts
+alias logs='journalctl -f'
+alias end-logs='journalctl -xe'
+alias start='systemctl start'
+alias stop='systemctl stop'
+alias status='systemctl status'
+alias restart='systemctl restart'
+alias sort-size='du -sh * | sort -h'
+alias dusort='du -sh * | sort -h'
+alias cdp="cd $project_dir"
+alias updatevim='vim +PluginInstall +qall'
+alias precommit='pre-commit'
+alias precommit-init='precommit install && precommit autoupdate'
+# remove spaces from files in current dir
+clearspaces-file() {
+    'find . -name "* *" -type d | rename 's/ /_/g' '
+}
+# remove spaces from directories in current dir
+clearspaces-dir() {
+    'find . -name "* *" -type f | rename 's/ /_/g' '
+}
+
+###############################
+# DOCKER ALIASES
+###############################
+alias dcps='sudo docker ps'
+alias dci='sudo docker images'
+alias dcvls='sudo docker volume ls'
+alias dcnls='sudo docker network ls'
+#alias dck='docker rmi -f $(docker images -a -q)'
+alias dcstop='sudo docker stop $(docker ps -a -q)'
+alias dcom='docker-compose'
+alias dcu='docker-compose up -d'
+alias dcd='docker-compose down'
+alias dcl='docker-compose logs'
+alias dcb='docker-compose build'
+alias dcub='docker-compose up --build'
+alias dcvp='docker volume prune -f'
+alias dcnp='docker network prune -f'
+alias dcrmi='docker rmi -f $(docker images -a -q)'
+# Docker clear all images and volumes
+dcc () {
+  echo 'Stopping running containers (if available)...'
+  docker stop $(docker ps -aq) 
+  echo 'Removing containers ..'
+  docker rm $(docker ps -aq)  
+  #echo 'Removing images ...'
+  #docker rmi $(docker images -q)  
+  echo 'Revoming docker container volumes (if any)'
+  docker volume rm $(docker volume ls -q)  
+
+}
+###############################
+# GIT ALIASES
+###############################
+alias gcom='git commit -m'
+alias gcm='git checkout main'
+alias ghas='gh auth status'
+alias gp='git push'
+alias git-squash-all='git reset $(git commit-tree HEAD^{tree} -m "A new start")'
+# update all git repo's in github dir
+gpall () {
+  cd $project_dir
+  find . -mindepth 1 -maxdepth 1 -type d -print -exec git -C {} pull \;
+  cd -
+}
+# create new branch
+function gnb () {
+  branchName=$1
+  git checkout -b $branchName
+  git push --set-upstream origin $branchName
+}
+# delete branch
+function gdb () {
+  branchName=$1
+  git branch -d $branchName
+  git push origin --delete $branchName
+}
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.git_alias ]; then
+    . ~/.git_alias
+fi 
+
+if [ -f ~/.tf_alias ]; then
+    . ~/.tf_alias
+fi
+
+if [ -f ~/.aws_alias ]; then
+    . ~/.aws_alias
+fi

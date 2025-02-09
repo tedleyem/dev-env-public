@@ -1,0 +1,174 @@
+# Aliases & Functions for zrcsh specific to User Name
+# ZSH THEME
+ZSH_THEME=amuse
+TIMESTAMP=`date`
+# project variable
+export PROJECT_PATH="${HOME}/projects"
+export PATH=/opt/homebrew/bin:$PATH
+setopt PROMPT_SUBST
+export PROMPT='${COLOR_USR}%n@%M ${COLOR_DIR}%d ${COLOR_GIT}$(parse_git_branch)${COLOR_DEF}${NEWLINE}%% '
+# Zsh plugins
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete)
+parse_git_branch() {
+    git branch 2> /dev/null | sed -n -e 's/^\* \(.*\)/[\1]/p'
+}
+COLOR_DEF='%f'
+COLOR_USR='%F{243}'
+COLOR_DIR='%F{197}'
+COLOR_GIT='%F{39}'
+###############################
+# ALIASES
+###############################
+# launchctl alias
+alias start='launchctl start'
+alias stop='launchctl stop'
+alias status='launchctl status'
+alias restart='launchctl restart'
+# zsh alias
+alias zedit='vim ~/.zshrc'
+alias srcz='source ~/.zshrc'
+alias update-vim='vim +PluginInstall +qall'
+alias updatevim='vim +PluginInstall +qall'
+alias precommit='pre-commit'
+alias preinit='precommit install && precommit autoupdate'
+#########
+# logo-ls go package aliases
+alias ils='logo-ls'
+alias ila='logo-ls -A'
+alias ill='logo-ls -al'
+# equivalents with Git Status on by Default
+alias ilsg='logo-ls -D'
+alias ilag='logo-ls -AD'
+alias illg='logo-ls -alD'
+#########
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias ls='ls --color=auto'
+# CLI shortcuts
+alias check-moon='curl wttr.in/Moon'
+alias moon='curl wttr.in/Moon'
+alias check-weather='curl wttr.in'
+alias weather='curl wttr.in'
+alias crypto-rates='curl rate.sx'
+alias crypto='curl rate.sx'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias grep='grep --color=auto'
+alias check-size='du -sh *'
+alias dush='du -sh *'
+alias sort-size='du -sh * | sort -h'
+alias dusort='du -sh * | sort -h'
+alias tartar='tar -zxvf'
+# python shortcuts
+alias p3='python3'
+alias p3p='python3 -m pip'
+alias p3pi='python3 -m pip install'
+# VIM shortcuts
+alias update-vim='vim +PluginInstall +qall'
+# kubernetes shortcut
+alias k='kubectl'
+alias mk='minikube'
+# Vagrant shortcuts
+alias vg='vagrant'
+alias vgu='vagrant up'
+alias vgd='vagrant destroy'
+alias vgdf='vagrant destroy -f'
+alias vgp='vagrant up --provision'
+#alias vgp='vagrant up --provider=vmware_fusion --provision'
+#alias vgp='vagrant up --provider=docker --provision'
+alias vgup='vagrant up --provision'
+# system shortcuts
+alias logs='journalctl -f'
+alias end-logs='journalctl -xe'
+alias start='systemctl start'
+alias stop='systemctl stop'
+alias status='systemctl status'
+alias restart='systemctl restart'
+alias sort-size='du -sh * | sort -h'
+alias dusort='du -sh * | sort -h'
+alias updatevim='vim +PluginInstall +qall'
+alias precommit='pre-commit'
+alias precommit-init='precommit install && precommit autoupdate'
+# remove spaces from files in current dir
+clearspaces-file() {
+    'find . -name "* *" -type d | rename 's/ /_/g' '
+}
+# remove spaces from directories in current dir
+clearspaces-dir() {
+    'find . -name "* *" -type f | rename 's/ /_/g' '
+}
+###############################
+# TERRAFORM ALIASES
+###############################
+alias tf='terraform'
+alias tfutils='tf-utils'
+alias tfi='tf init'
+alias tfp='tf plan'
+alias tfa='tf apply'
+alias tfd='tf destroy'
+alias tfiu='tf init -upgrade'
+alias rmtf='rm -rf .terraform && echo "deleted .terraform directory"'
+alias rmtfl='rm -rf .terraform.lock.hcl && echo "deleted .terraform.lock.hcl"'
+###############################
+# DOCKER ALIASES
+###############################
+alias dcps='sudo docker ps'
+alias dci='sudo docker images'
+alias dcvls='sudo docker volume ls'
+alias dcnls='sudo docker network ls'
+#alias dck='docker rmi -f $(docker images -a -q)'
+alias dcstop='sudo docker stop $(docker ps -a -q)'
+alias dcom='docker-compose'
+alias dcu='docker-compose up -d'
+alias dcd='docker-compose down'
+alias dcl='docker-compose logs'
+alias dcb='docker-compose build'
+alias dcub='docker-compose up --build'
+alias dcvp='docker volume prune -f'
+alias dcnp='docker network prune -f'
+alias dcrmi='docker rmi -f $(docker images -a -q)'
+# Docker clear all images and volumes
+dcc () {
+  echo 'Stopping running containers (if available)...'
+  docker stop $(docker ps -aq) && sleep 1
+  echo 'Removing containers ..'
+  docker rm $(docker ps -aq)  && sleep 1
+  echo 'Removing images ...'
+  docker rmi $(docker images -q)  && sleep 1
+  echo 'Revoming docker container volumes (if any)'
+  docker volume rm $(docker volume ls -q)  && sleep 1
+
+}
+###############################
+# GIT ALIASES
+###############################
+alias gcom='git commit -m'
+alias gcm='git checkout main'
+alias ghas='gh auth status'
+alias gp='git push'
+alias git-squash-all='git reset $(git commit-tree HEAD^{tree} -m "A new start")'
+# update all git repo's in github dir
+gpall () {
+  cd $project_dir
+  find . -mindepth 1 -maxdepth 1 -type d -print -exec git -C {} pull \;
+  cd -
+}
+# create new branch
+function gnb () {
+  branchName=$1
+  git checkout -b $branchName
+  git push --set-upstream origin $branchName
+}
+# delete branch
+function gdb () {
+  branchName=$1
+  git branch -d $branchName
+  git push origin --delete $branchName
+}
+
+# osx info for jekyll pages
+if [ -d "/opt/homebrew/opt/ruby/bin" ]; then
+  export PATH=/opt/homebrew/opt/ruby/bin:$PATH
+  export PATH=`gem environment gemdir`/bin:$PATH
+fi
